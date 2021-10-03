@@ -19,12 +19,12 @@ class WalletController extends Controller
         $auth = User::where('id',auth()->id())->pluck('id');
         if($auth[0] == $id){
             $wallet = Wallet::where('user_id',$id)->first();
-
             return response()->json([
+                'status' => true,
                 'data' =>[
                     'name' => $wallet->user->name,
                     'amount' => $wallet->amount,
-                    'status' => $wallet->status,
+                    'status' => $wallet->active == true ? 'active' : 'inactive',
                 ]
             ],200);
         }else{
@@ -44,24 +44,26 @@ class WalletController extends Controller
         $auth = User::where('id',auth()->id())->pluck('id');
         if($auth[0] == $id){
             $wallet = Wallet::where('user_id',$id)->first();
-            $credit = $request->amount + $wallet->amount;
-            $pay = $wallet->update(['amount'=> $credit]);
-            if($pay){
+            if($wallet->active){
+                $credit = $request->amount + $wallet->amount;
+                $wallet->update(['amount'=> $credit]);
                 transaction($request,$wallet->id,'credit','success');
                 return response()->json([
+                    'status'=> true,
                     'data' =>[
                         'message' =>'Your account has been credited',
                         'name' => $wallet->user->name,
-                        'amount' => $wallet->amount,
+                        'amount' => 'Avaliable Balance '.$wallet->amount,
                     ]
                 ],200);
             }else{
             transaction($request,$wallet->id,'credit','failed');
                 return response()->json([
+                    'status'=> false,
                     'data' =>[
                         'message' =>'Your account could not be credited',
                         'name' => $wallet->user->name,
-                        'amount' => $wallet->amount,
+                        'amount' => 'Avaliable Balance '.$wallet->amount,
                     ]
                 ],400);
             }
@@ -83,27 +85,30 @@ class WalletController extends Controller
         $auth = User::where('id',auth()->id())->pluck('id');
         if($auth[0] == $id){
             $wallet = Wallet::where('user_id',$id)->first();
-            if($request->amount > $wallet->amount){
-                return sendError('Insufficient Balance');
-            }
-            $debit = $wallet->amount - $request->amount;
-            $paid = $wallet->update(['amount'=> $debit]);
-            if($paid){
+            if($wallet->active){
+                if($request->amount > $wallet->amount){
+                    return sendError('Insufficient Balance');
+                }
+
+                $debit = $wallet->amount - $request->amount;
+                $wallet->update(['amount'=> $debit]);
                 transaction($request,$wallet->id,'debit','success');
                 return response()->json([
+                    'status'=> true,
                     'data' =>[
                         'message' =>'Your account has been debited',
                         'name' => $wallet->user->name,
-                        'amount' => $wallet->amount,
+                        'amount' => 'Avaliable Balance '.$wallet->amount,
                     ]
                 ],200);
             }else{
                 transaction($request,$wallet->id,'debit','failed');
                 return response()->json([
+                    'status' => false,
                     'data' =>[
-                        'message' =>'Your account could not be debited',
+                        'message' =>'Your account could not be debited, activate account!',
                         'name' => $wallet->user->name,
-                        'amount' => $wallet->amount,
+                        'amount' => 'Avaliable Balance '.$wallet->amount,
                     ]
                 ],400);
             }
