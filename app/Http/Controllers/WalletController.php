@@ -53,7 +53,7 @@ class WalletController extends Controller
                     'data' =>[
                         'message' =>'Your account has been credited',
                         'name' => $wallet->user->name,
-                        'amount' => 'Avaliable Balance '.$wallet->amount,
+                        'status' => 'Avaliable Balance '.$wallet->amount,
                     ]
                 ],200);
             }else{
@@ -63,7 +63,7 @@ class WalletController extends Controller
                     'data' =>[
                         'message' =>'Your account could not be credited',
                         'name' => $wallet->user->name,
-                        'amount' => 'Avaliable Balance '.$wallet->amount,
+                        'status' => 'Inactive account',
                     ]
                 ],400);
             }
@@ -98,7 +98,7 @@ class WalletController extends Controller
                     'data' =>[
                         'message' =>'Your account has been debited',
                         'name' => $wallet->user->name,
-                        'amount' => 'Avaliable Balance '.$wallet->amount,
+                        'status' => 'Avaliable Balance '.$wallet->amount,
                     ]
                 ],200);
             }else{
@@ -108,7 +108,7 @@ class WalletController extends Controller
                     'data' =>[
                         'message' =>'Your account could not be debited, activate account!',
                         'name' => $wallet->user->name,
-                        'amount' => 'Avaliable Balance '.$wallet->amount,
+                        'status' => 'Inactive Account',
                     ]
                 ],400);
             }
